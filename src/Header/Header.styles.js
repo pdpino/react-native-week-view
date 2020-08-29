@@ -14,8 +14,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    borderBottomColor: '#E9EDF0',
     borderTopWidth: 1,
     borderLeftWidth: 1,
+  },
+  columnText: {
+    textAlign: 'center',
+    textShadowColor: 'black',
+    textShadowOffset: { width: 0, height: 1 },
   },
 });
 

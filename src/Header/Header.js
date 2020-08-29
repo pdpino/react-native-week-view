@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Text, View } from 'react-native';
+import moment from 'moment';
 
 import {
   getFormattedDate,
@@ -9,20 +10,36 @@ import {
 } from '../utils';
 import styles from './Header.styles';
 
-const getDayTextStyles = (numberOfDays) => {
-  const fontSize = numberOfDays === 7 ? 12 : 14;
-  return {
-    fontSize,
-  };
+const getFontSizeDays = (numberOfDays) => {
+  return numberOfDays === 7 ? 12 : 14;
+};
+
+const getColumnContainerStyle = (isToday) => {
+  return isToday ? {
+    paddingTop: 4,
+    borderBottomWidth: 4,
+  } : null;
+};
+
+const getColumnTextStyle = (isToday) => {
+  return isToday ? {
+    fontWeight: 'bold',
+    textShadowRadius: 0.5,
+  } : null;
 };
 
 const Column = ({ column, numberOfDays, format, style, textStyle }) => {
+  const isToday = moment().isSame(column, 'days');
+
   return (
-    <View style={[styles.column, style]}>
+    <View style={[styles.column, getColumnContainerStyle(isToday), style]}>
       <Text
         style={[
-          { color: style.color },
-          getDayTextStyles(numberOfDays),
+          {
+            color: style.color,
+            fontSize: getFontSizeDays(numberOfDays),
+          },
+          getColumnTextStyle(isToday),
           textStyle,
         ]}
       >
