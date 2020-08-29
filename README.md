@@ -22,7 +22,9 @@ const MyComponent = () => (
 ```
 
 ## Props
-* **`events`** _(Array)_ - Events to display, in `Event Object` format (see below)
+* * **`events`** Can be one of:
+  1. _(Array)_ - Events to display (recommended option)
+  2. _(Object)_ - Keys are dates in format "YYYY-MM-DD", and value is an array of events from that date, as returned by `sortEventsByDate` function. See Events by date subsection below for details.
 * **`onEventPress`** _(Function)_ - Callback when event item is clicked
 * **`numberOfDays`** _(Number)_ - Set number of days to show in view, can be `1`, `3`, `5`, `7`.
 * **`formatDateHeader`** _(String)_ - Format for dates of header, default is `MMM D`
@@ -106,6 +108,47 @@ addLocale('fr', {
   weekdaysShort: 'dim._lun._mar._mer._jeu._ven._sam.'.split('_'),
 });
 ```
+
+
+## Events by date object
+
+If the parent component of `WeekView` is performing heavy/slow computation on the events (like an API request), and/or the amount of events you have is large (>1000), the `events` prop could be an `eventsByDate` object, to perform all the heavy computation in the same place.
+The `sortEventsByDate` function is provided, that receives an array of events and returns the required object.
+See example, where all the heavy computation is done in `componentDidMount()`:
+```javascript
+// ...
+import WeekView from 'react-native-week-view';
+import { sortEventsByDate } from 'react-native-week-view/src/utils';
+
+class MyComponent extends React.Component {
+  // ...
+  componentDidMount() {
+    const rawEvents = someApiRequest();
+    const processedEvents = rawToProcessedEvents(rawEvents);
+    // Array of events with shape:
+    // {
+    //   id: 1,
+    //   description: 'Event 1',
+    //   startDate: new Date(),
+    //   endDate: new Date(),
+    //   color: 'blue',
+    // }
+    this.setState({
+      events: sortEventsByDate(processedEvents),
+    });
+  }
+  // ...
+  render() {
+    return (
+      <WeekView
+        events={this.state.events}
+        // ... other props
+      />
+    )
+  }
+}
+```
+
 
 ## TODO
 - [x] allow to swipe between weeks or days.
