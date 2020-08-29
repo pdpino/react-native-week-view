@@ -22,6 +22,7 @@ const Event = ({
         containerStyle,
       ]}
       disabled={!onPress}
+      delayPressIn={0}
     >
       {EventComponent ? (
         <EventComponent event={event} position={position} />
