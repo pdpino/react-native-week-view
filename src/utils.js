@@ -3,7 +3,7 @@ import moment from 'moment';
 import memoizeOne from 'memoize-one';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-export const TIME_LABELS_IN_DISPLAY = 12;
+export const TIME_LABELS_IN_DISPLAY = 16;
 export const CONTAINER_HEIGHT = SCREEN_HEIGHT - 60;
 export const CONTAINER_WIDTH = SCREEN_WIDTH - 60;
 export const TIME_LABEL_HEIGHT = CONTAINER_HEIGHT / TIME_LABELS_IN_DISPLAY;

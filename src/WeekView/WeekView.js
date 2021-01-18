@@ -34,7 +34,7 @@ export default class WeekView extends Component {
     this.eventsGrid = null;
     this.verticalAgenda = null;
     this.header = null;
-    this.pageOffset = 2;
+    this.pageOffset = 1;
     this.currentPageIndex = this.pageOffset;
     this.eventsGridScrollX = new Animated.Value(0);
 
@@ -357,6 +357,7 @@ export default class WeekView extends Component {
               }}
               horizontal
               pagingEnabled
+              showsHorizontalScrollIndicator={false}
               inverted={horizontalInverted}
               onMomentumScrollEnd={this.scrollEnded}
               scrollEventThrottle={32}
