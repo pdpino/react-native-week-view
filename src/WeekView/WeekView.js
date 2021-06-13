@@ -258,7 +258,12 @@ export default class WeekView extends Component {
     this.header = ref;
   };
 
-  calculatePagesDates = (currentMoment, numberOfDays, prependMostRecent, fixedHorizontally) => {
+  calculatePagesDates = (
+    currentMoment,
+    numberOfDays,
+    prependMostRecent,
+    fixedHorizontally,
+  ) => {
     const initialDates = [];
     const centralDate = moment(currentMoment);
     if (numberOfDays === 7 || fixedHorizontally) {
@@ -337,6 +342,7 @@ export default class WeekView extends Component {
       hoursInDisplay,
       timeStep,
       onGridClick,
+      onGridLongPress,
       EventComponent,
       prependMostRecent,
       rightToLeft,
@@ -344,6 +350,7 @@ export default class WeekView extends Component {
       showNowLine,
       nowLineColor,
       onDragEvent,
+      onEditEventEndDate,
     } = this.props;
     const { currentMoment, initialDates } = this.state;
     const times = this.calculateTimes(timeStep);
@@ -424,6 +431,7 @@ export default class WeekView extends Component {
                     numberOfDays={numberOfDays}
                     onEventPress={onEventPress}
                     onGridClick={onGridClick}
+                    onGridLongPress={onGridLongPress}
                     hoursInDisplay={hoursInDisplay}
                     timeStep={timeStep}
                     EventComponent={EventComponent}
@@ -432,6 +440,7 @@ export default class WeekView extends Component {
                     showNowLine={showNowLine}
                     nowLineColor={nowLineColor}
                     onDragEvent={onDragEvent}
+                    onEditEventEndDate={onEditEventEndDate}
                   />
                 );
               }}
@@ -469,6 +478,7 @@ WeekView.propTypes = {
   onSwipePrev: PropTypes.func,
   onEventPress: PropTypes.func,
   onGridClick: PropTypes.func,
+  onGridLongPress: PropTypes.func,
   headerStyle: PropTypes.object,
   headerTextStyle: PropTypes.object,
   hourTextStyle: PropTypes.object,

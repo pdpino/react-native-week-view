@@ -1,6 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Animated, PanResponder, Text, TouchableOpacity } from 'react-native';
+import {
+  Animated,
+  PanResponder,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import styles from './Event.styles';
 
 const UPDATE_EVENT_ANIMATION_DURATION = 150;
@@ -8,7 +14,9 @@ const UPDATE_EVENT_ANIMATION_DURATION = 150;
 class Event extends React.Component {
   translatedByDrag = new Animated.ValueXY();
 
-  panResponder = PanResponder.create({
+  currentHeight = new Animated.Value(0);
+
+  containerPanResponder = PanResponder.create({
     // If the press is disabled, the drag-gesture will be handled in the capture phase
     // If the press is enabled, will be handled in the bubbling phase
     onStartShouldSetPanResponder: () => this.isDragEnabled(),
@@ -39,19 +47,60 @@ class Event extends React.Component {
     },
   });
 
+  editCirclePanResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => this.isEditEnabled(),
+    onStartShouldSetPanResponderCapture: () => this.isEditEnabled(),
+    onMoveShouldSetPanResponder: () => this.isEditEnabled(),
+    onMoveShouldSetPanResponderCapture: () => this.isEditEnabled(),
+    onPanResponderMove: Animated.event(
+      [
+        null,
+        {
+          dy: this.currentHeight,
+        },
+      ],
+      {
+        useNativeDriver: false,
+      },
+    ),
+    onPanResponderTerminationRequest: () => false,
+    onPanResponderRelease: (_, gestureState) => {
+      const { dy } = gestureState;
+      this.onEditRelease(dy);
+      this.setEditingMode(false);
+    },
+    onPanResponderTerminate: () => {
+      this.currentHeight.setValue(0);
+      this.currentHeight.setOffset(this.props.position.height);
+      this.setEditingMode(false);
+    },
+  });
+
   constructor(props) {
     super(props);
 
-    const { left, width } = props.position;
+    this.state = {
+      isEditing: false,
+    };
+
+    const { left, width, height } = props.position;
     this.currentWidth = new Animated.Value(width);
     this.currentLeft = new Animated.Value(left);
+    // this.currentHeight = new Animated.Value(height);
+    // console.log('HEIGHT: ', height);
+    this.currentHeight.setOffset(height);
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.position !== this.props.position) {
       this.translatedByDrag.setValue({ x: 0, y: 0 });
       const animations = [];
-      const { left, width } = this.props.position;
+      const { left, width, height } = this.props.position;
+      if (prevProps.position.height !== height) {
+        // Height only changes by editing...
+        this.currentHeight.setOffset(height);
+        this.currentHeight.setValue(0);
+      }
       if (prevProps.position.width !== width) {
         animations.push(
           Animated.timing(this.currentWidth, {
@@ -78,8 +127,12 @@ class Event extends React.Component {
     return !this.props.onPress;
   };
 
+  isEditEnabled = () => {
+    return this.state.isEditing;
+  };
+
   isDragEnabled = () => {
-    return !!this.props.onDrag;
+    return !!this.props.onDrag && !this.state.isEditing;
   };
 
   onDragRelease = (dx, dy) => {
@@ -93,6 +146,25 @@ class Event extends React.Component {
     onDrag(this.props.event, newX, newY);
   };
 
+  onEditRelease = (dy) => {
+    const { position, onEditEndDate } = this.props;
+    if (!onEditEndDate) {
+      return;
+    }
+
+    const newY = position.top + position.height + dy;
+    if (newY <= position.top) {
+      this.currentHeight.setValue(0);
+      this.currentHeight.setOffset(position.height);
+      return;
+    }
+    onEditEndDate(this.props.event, newY);
+  };
+
+  setEditingMode = (isEditing) => {
+    this.setState({ isEditing });
+  };
+
   render() {
     const {
       event,
@@ -102,7 +174,9 @@ class Event extends React.Component {
       containerStyle,
     } = this.props;
 
-    const { top, height } = position;
+    const { top } = position;
+    const { isEditing } = this.state;
+
     return (
       <Animated.View
         style={[
@@ -110,20 +184,23 @@ class Event extends React.Component {
           {
             top,
             left: this.currentLeft,
-            height,
+            height: this.currentHeight,
             width: this.currentWidth,
             backgroundColor: event.color,
+            zIndex: isEditing ? 2 : 1,
+            opacity: isEditing ? 0.8 : 1,
           },
           this.translatedByDrag.getTranslateTransform(),
           containerStyle,
         ]}
         /* eslint-disable react/jsx-props-no-spreading */
-        {...this.panResponder.panHandlers}
+        {...this.containerPanResponder.panHandlers}
       >
         <TouchableOpacity
           style={styles.touchableContainer}
           disabled={!onPress}
           onPress={() => onPress && onPress(event)}
+          onLongPress={() => this.setEditingMode(true)}
         >
           {EventComponent ? (
             <EventComponent event={event} position={position} />
@@ -131,6 +208,12 @@ class Event extends React.Component {
             <Text style={styles.description}>{event.description}</Text>
           )}
         </TouchableOpacity>
+        {isEditing && (
+          <View
+            style={styles.circle}
+            {...this.editCirclePanResponder.panHandlers}
+          />
+        )}
       </Animated.View>
     );
   }
@@ -158,6 +241,7 @@ Event.propTypes = {
   containerStyle: PropTypes.object,
   EventComponent: PropTypes.elementType,
   onDrag: PropTypes.func,
+  onEditEndDate: PropTypes.func,
 };
 
 export default Event;

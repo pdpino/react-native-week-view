@@ -183,9 +183,10 @@ class Events extends PureComponent {
     },
   );
 
-  onGridClick = (event, dayIndex) => {
-    const { initialDate, onGridClick } = this.props;
-    if (!onGridClick) {
+  onGridTouch = (event, dayIndex, isLong) => {
+    const { initialDate, onGridClick, onGridLongPress } = this.props;
+    const callback = isLong ? onGridLongPress : onGridClick;
+    if (!callback) {
       return;
     }
     const { locationY } = event.nativeEvent;
@@ -193,7 +194,7 @@ class Events extends PureComponent {
 
     const date = moment(initialDate).add(dayIndex, 'day').toDate();
 
-    onGridClick(event, hour, date);
+    callback(event, hour, date);
   };
 
   onDragEvent = (event, newX, newY) => {
@@ -220,6 +221,22 @@ class Events extends PureComponent {
     onDragEvent(event, newStartDate, newEndDate);
   };
 
+  onEditEventEndDate = (event, newY) => {
+    const { onEditEventEndDate } = this.props;
+    if (!onEditEventEndDate) {
+      return;
+    }
+    const { endDate } = event;
+
+    const newMinutes = this.yToHour(newY - CONTENT_OFFSET) * 60;
+    const newEndDate = moment(endDate)
+      .startOf('day')
+      .minutes(newMinutes)
+      .toDate();
+    // console.log('NEW END DATE: ', moment(newEndDate).format('H:mm'));
+    onEditEventEndDate(event, newEndDate);
+  };
+
   isToday = (dayIndex) => {
     const { initialDate } = this.props;
     const today = moment();
@@ -241,6 +258,7 @@ class Events extends PureComponent {
       showNowLine,
       nowLineColor,
       onDragEvent,
+      onEditEventEndDate,
     } = this.props;
     const totalEvents = this.processEvents(
       eventsByDate,
@@ -265,7 +283,8 @@ class Events extends PureComponent {
         <View style={styles.eventsContainer}>
           {totalEvents.map((eventsInSection, dayIndex) => (
             <TouchableWithoutFeedback
-              onPress={(e) => this.onGridClick(e, dayIndex)}
+              onPress={(e) => this.onGridTouch(e, dayIndex, false)}
+              onLongPress={(e) => this.onGridTouch(e, dayIndex, true)}
               key={dayIndex}
             >
               <View style={styles.eventsColumn}>
@@ -285,6 +304,9 @@ class Events extends PureComponent {
                     EventComponent={EventComponent}
                     containerStyle={eventContainerStyle}
                     onDrag={onDragEvent && this.onDragEvent}
+                    onEditEndDate={
+                      onEditEventEndDate && this.onEditEventEndDate
+                    }
                   />
                 ))}
               </View>
@@ -312,6 +334,7 @@ Events.propTypes = {
   showNowLine: PropTypes.bool,
   nowLineColor: PropTypes.string,
   onDragEvent: PropTypes.func,
+  onEditEventEndDate: PropTypes.func,
 };
 
 export default Events;

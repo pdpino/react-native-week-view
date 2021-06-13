@@ -8,6 +8,7 @@
 
 import React from 'react';
 import {SafeAreaView, StyleSheet, StatusBar, Alert} from 'react-native';
+import moment from 'moment';
 
 import WeekView, {createFixedWeekDate} from 'react-native-week-view';
 
@@ -62,7 +63,7 @@ const sampleFixedEvents = [
 ];
 
 // For debugging purposes
-const showFixedComponent = true;
+const showFixedComponent = false;
 
 class App extends React.Component {
   state = {
@@ -70,16 +71,36 @@ class App extends React.Component {
     selectedDate: new Date(),
   };
 
-  onEventPress = ({id, color, startDate, endDate}) => {
+  onEventPress = ({id, description, color, startDate, endDate}) => {
     Alert.alert(
-      `event ${color} - ${id}`,
-      `start: ${startDate}\nend: ${endDate}`,
+      `${description}: (${color}, ${id})`,
+      `start: ${moment(startDate).toDate()}\nend: ${moment(endDate).toDate()}`,
     );
   };
 
   onGridClick = (event, startHour, date) => {
     const dateStr = date.toISOString().split('T')[0];
     Alert.alert(`Date: ${dateStr}\nStart hour: ${startHour}`);
+  };
+
+  onGridLongPress = (event, startHour, date) => {
+    const maxId = Math.max(...this.state.events.map(e => e.id));
+    const startDate = date;
+    startDate.setHours(startHour);
+    const endDate = new Date(startDate.getTime());
+    endDate.setHours(startDate.getHours() + 2);
+    this.setState({
+      events: [
+        ...this.state.events,
+        {
+          id: maxId + 1,
+          description: 'New Event',
+          color: 'rgb(0, 200, 0)',
+          startDate,
+          endDate,
+        },
+      ],
+    });
   };
 
   onDragEvent = (event, newStartDate, newEndDate) => {
@@ -90,6 +111,18 @@ class App extends React.Component {
         {
           ...event,
           startDate: newStartDate,
+          endDate: newEndDate,
+        },
+      ],
+    });
+  };
+
+  onEditEventEndDate = (event, newEndDate) => {
+    this.setState({
+      events: [
+        ...this.state.events.filter(e => e.id !== event.id),
+        {
+          ...event,
           endDate: newEndDate,
         },
       ],
@@ -108,9 +141,10 @@ class App extends React.Component {
             }}
             events={events}
             selectedDate={selectedDate}
-            numberOfDays={7}
+            numberOfDays={3}
             onEventPress={this.onEventPress}
             onGridClick={this.onGridClick}
+            onGridLongPress={this.onGridLongPress}
             headerStyle={styles.header}
             headerTextStyle={styles.headerText}
             hourTextStyle={styles.hourText}
@@ -118,11 +152,12 @@ class App extends React.Component {
             formatDateHeader={showFixedComponent ? 'ddd' : 'ddd DD'}
             hoursInDisplay={12}
             timeStep={60}
-            startHour={8}
+            startHour={11}
             fixedHorizontally={showFixedComponent}
             showTitle={!showFixedComponent}
             showNowLine
             onDragEvent={this.onDragEvent}
+            onEditEventEndDate={this.onEditEventEndDate}
           />
         </SafeAreaView>
       </>
