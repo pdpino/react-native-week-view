@@ -198,7 +198,7 @@ class Event extends React.Component {
       >
         <TouchableOpacity
           style={styles.touchableContainer}
-          disabled={!onPress}
+          disabled={false}
           onPress={() => onPress && onPress(event)}
           onLongPress={() => this.setEditingMode(true)}
         >
