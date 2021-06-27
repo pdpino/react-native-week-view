@@ -1,0 +1,32 @@
+name: Linter
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint-main:
+    name: Lint main folder
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn lint
+
+  lint-example:
+    name: Lint example app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - run: yarn install --frozen-lockfile
+        working-directory: example
+
+      - run: yarn lint
+        working-directory: example
