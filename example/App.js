@@ -82,8 +82,21 @@ class App extends React.Component {
     Alert.alert(`Date: ${dateStr}\nStart hour: ${startHour}`);
   };
 
+  onRefresh = () => {
+    console.log('Refreshing!');
+    this.setState({
+      isRefreshing: true,
+    });
+    // Dummy function to refresh for 1 second
+    setTimeout(() => {
+      this.setState({
+        isRefreshing: false,
+      });
+    }, 1000);
+  };
+
   render() {
-    const {events, selectedDate} = this.state;
+    const {events, selectedDate, isRefreshing} = this.state;
     return (
       <>
         <StatusBar barStyle="dark-content" />
@@ -108,6 +121,8 @@ class App extends React.Component {
             fixedHorizontally={showFixedComponent}
             showTitle={!showFixedComponent}
             showNowLine
+            isRefreshing={isRefreshing}
+            onRefresh={this.onRefresh}
           />
         </SafeAreaView>
       </>
